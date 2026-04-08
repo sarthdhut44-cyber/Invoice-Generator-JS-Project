@@ -1,83 +1,105 @@
 let products = [];
+let cart = [];
 
-let loading = document.getElementById("loading");
 let productSelect = document.getElementById("product");
-let qty = document.getElementById("qty");
-let search = document.getElementById("search");
-let filter = document.getElementById("filter");
+let tableBody = document.getElementById("tableBody");
 
-// API fetch
+// Set date + invoice number
+document.getElementById("date").innerText = new Date().toLocaleDateString();
+document.getElementById("invoiceNo").innerText = Math.floor(Math.random() * 10000);
+
+// Load saved data
+window.onload = () => {
+  let saved = localStorage.getItem("invoiceData");
+  if (saved) {
+    cart = JSON.parse(saved);
+    renderTable();
+  }
+};
+
+// Fetch products
 fetch("https://dummyjson.com/products")
   .then(res => res.json())
   .then(data => {
     products = data.products;
-
-    loading.style.display = "none";
-
-    displayProducts(products);
-    loadCategories(products);
+    loadProducts();
   });
 
-// Display products
-function displayProducts(data) {
-  productSelect.innerHTML = "";
-
-  data.forEach(item => {
+// Load dropdown
+function loadProducts() {
+  products.forEach(p => {
     let option = document.createElement("option");
-    option.value = item.id;
-    option.text = item.title;
+    option.value = p.id;
+    option.text = p.title;
     productSelect.appendChild(option);
   });
 }
 
-// Load categories
-function loadCategories(data) {
-  let categories = [...new Set(data.map(p => p.category))];
-
-  categories.forEach(cat => {
-    let option = document.createElement("option");
-    option.value = cat;
-    option.text = cat;
-    filter.appendChild(option);
-  });
-}
-
-// Search
-search.addEventListener("input", () => {
-  let value = search.value.toLowerCase();
-
-  let filtered = products.filter(p =>
-    p.title.toLowerCase().includes(value)
-  );
-
-  displayProducts(filtered);
-});
-
-// Filter
-filter.addEventListener("change", () => {
-  let category = filter.value;
-
-  if (category === "all") {
-    displayProducts(products);
-  } else {
-    let filtered = products.filter(p => p.category === category);
-    displayProducts(filtered);
-  }
-});
-
-// Calculate total
-productSelect.addEventListener("change", calculate);
-qty.addEventListener("input", calculate);
-
-function calculate() {
+// Add item
+function addItem() {
   let id = productSelect.value;
-  let quantity = qty.value;
+  let qty = document.getElementById("qty").value;
 
   let product = products.find(p => p.id == id);
 
-  if (product) {
-    let total = product.price * quantity;
-    document.getElementById("total").innerText =
-      "Total: ₹" + total.toFixed(2);
-  }
+  if (!product || qty <= 0) return;
+
+  let item = {
+    name: product.title,
+    price: product.price,
+    qty: Number(qty)
+  };
+
+  cart.push(item);
+  saveInvoice();
+  renderTable();
+}
+
+// Render table
+function renderTable() {
+  tableBody.innerHTML = "";
+
+  cart.forEach((item, index) => {
+    let row = `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.price}</td>
+        <td>${item.qty}</td>
+        <td>${item.price * item.qty}</td>
+        <td><button onclick="removeItem(${index})">❌</button></td>
+      </tr>
+    `;
+    tableBody.innerHTML += row;
+  });
+
+  calculateTotal();
+}
+
+// Remove item
+function removeItem(index) {
+  cart.splice(index, 1);
+  saveInvoice();
+  renderTable();
+}
+
+// Calculate total
+function calculateTotal() {
+  let subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  let gst = subtotal * 0.18;
+  let total = subtotal + gst;
+
+  document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+  document.getElementById("gst").innerText = gst.toFixed(2);
+  document.getElementById("total").innerText = total.toFixed(2);
+}
+
+// Save to local storage
+function saveInvoice() {
+  localStorage.setItem("invoiceData", JSON.stringify(cart));
+}
+
+// Download PDF
+function downloadPDF() {
+  const element = document.getElementById("invoice");
+  html2pdf().from(element).save("invoice.pdf");
 }

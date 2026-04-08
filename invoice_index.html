@@ -1,31 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator</title>
-    <link rel="stylesheet" href="style.css">    
+  <title>Tax Invoice Generator</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-   <h1>Invoice Generator</h1>
 
-<p id="loading">Loading products...</p>
+<div class="container" id="invoice">
 
-<!-- 🔍 Search -->
-<input type="text" id="search" placeholder="Search product...">
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Tax Invoice</h1>
+      <p><b>Your Company Name</b></p>
+      <p >Address:<input/></p>
+      <p>GST No: <input/></p>
+    </div>
+  </div>
 
-<!-- 🎯 Filter -->
-<select id="filter">
-  <option value="all">All Categories</option>
-</select>
+  <!-- Invoice Info -->
+  <div class="invoice-info">
+    <p>Date: <span id="date"></span></p>
+    <p>Invoice No: <span id="invoiceNo"></span></p>
+  </div>
 
-<!-- Product -->
-<select id="product"></select>
+  <!-- Customer -->
+  <input id="customer" placeholder="Customer Name">
 
-<!-- Quantity -->
-<input type="number" id="qty" value="1" min="1">
+  <!-- Product Section -->
+  <div class="form">
+    <select id="product"></select>
+    <input id="qty" type="number" placeholder="Qty">
+    <button onclick="addItem()">Add</button>
+  </div>
 
-<h2 id="total">Total: ₹0</h2>
+  <!-- Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <!-- Summary -->
+  <div class="summary">
+    <p>Subtotal: ₹<span id="subtotal">0</span></p>
+    <p>GST (18%): ₹<span id="gst">0</span></p>
+    <h2>Total: ₹<span id="total">0</span></h2>
+  </div>
+
+  <!-- Signature -->
+  <div class="signature">
+    <p>Authorized Signature</p>
+    <div class="line"></div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="buttons">
+    <button onclick="window.print()">🖨️ Print</button>
+    <button onclick="downloadPDF()">📄 Download PDF</button>
+  </div>
+
+</div>
+
+<!-- PDF Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script src="script.js"></script>
 </body>
